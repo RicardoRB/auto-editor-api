@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
 FROM node:18-alpine
 
-# Instalar dependencias del sistema
+# Define un alias para las dependencias de compilación (build-base)
+# que son necesarias para que pip compile componentes nativos de Python en Alpine.
+ENV BUILD_DEPS="build-base python3-dev"
+
+# Instalar dependencias del sistema y de compilación
 RUN apk add --no-cache \
-    build-base \
+    $BUILD_DEPS \
     python3 \
-    python3-dev \
     py3-pip \
     # auto-editor necesita ffmpeg para procesar videos
     ffmpeg
@@ -13,15 +16,20 @@ RUN apk add --no-cache \
 # Crear y activar entorno virtual para auto-editor
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
+# Añadir la ruta del entorno virtual al PATH global
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Instalar auto-editor en el entorno virtual
-RUN pip3 install --no-cache-dir auto-editor && \
-    # Asegurar que el ejecutable tenga permisos correctos
-    chmod +x /opt/venv/bin/auto-editor && \
-    # Crear enlace simbólico para mantener compatibilidad con ambas rutas
-    mkdir -p /opt/venv/lib/python3.12/site-packages/auto_editor/bin && \
-    ln -s /opt/venv/bin/auto-editor /opt/venv/lib/python3.12/site-packages/auto_editor/bin/auto-editor
+# Usa la versión de PyPI (la estándar) o la de GitHub si la prefieres (descomenta la alternativa)
+RUN pip3 install --no-cache-dir auto-editor
+
+# --- ALTERNATIVA: Para instalar la versión de GitHub (si es lo que necesitas) ---
+# RUN apk add --no-cache git && \
+#     pip3 install --no-cache-dir 'git+https://github.com/WyattBlue/auto-editor.git' && \
+#     apk del git
+
+# Opcional: Eliminar las dependencias de compilación para reducir el tamaño de la imagen.
+RUN apk del $BUILD_DEPS
 
 WORKDIR /app
 
