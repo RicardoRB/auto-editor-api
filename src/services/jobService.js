@@ -7,13 +7,13 @@ const jobs = new Map();
 let runningCount = 0;
 const queue = [];
 
-function scheduleJob(jobId, template, inputPath, outputExt) {
+function scheduleJob(jobId, full_command, inputPath, outputExt) {
   const jobRecord = jobs.get(jobId);
   const task = async () => {
     try {
       runningCount++;
       log("info", "scheduleJob: task started", { jobId, runningCount });
-      await runAutoEditor(jobId, template, inputPath, outputExt, jobRecord);
+      await runAutoEditor(jobId, full_command, inputPath, outputExt, jobRecord);
     } finally {
       runningCount--;
       log("info", "scheduleJob: task finished", { jobId, runningCount });
