@@ -1,46 +1,42 @@
 # syntax=docker/dockerfile:1
-FROM node:18-alpine
+FROM ubuntu:25.10
 
-# Define un alias para las dependencias de compilación (build-base)
-# que son necesarias para que pip compile componentes nativos de Python en Alpine.
-ENV BUILD_DEPS="build-base python3-dev"
-
-# Instalar dependencias del sistema y de compilación
-RUN apk add --no-cache \
-    $BUILD_DEPS \
-    python3 \
-    py3-pip \
-    # auto-editor necesita ffmpeg para procesar videos
-    ffmpeg
-
-# Crear y activar entorno virtual para auto-editor
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-# Añadir la ruta del entorno virtual al PATH global
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Instalar auto-editor en el entorno virtual
-# Usa la versión de PyPI (la estándar) o la de GitHub si la prefieres (descomenta la alternativa)
-RUN pip3 install --no-cache-dir auto-editor
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-venv \
+    python3-pip \
+    ffmpeg \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# --- ALTERNATIVA: Para instalar la versión de GitHub (si es lo que necesitas) ---
-# RUN apk add --no-cache git && \
-#     pip3 install --no-cache-dir 'git+https://github.com/WyattBlue/auto-editor.git' && \
-#     apk del git
+# Create and activate virtual environment for auto-editor
+RUN python3 -m venv $VIRTUAL_ENV
 
-# Opcional: Eliminar las dependencias de compilación para reducir el tamaño de la imagen.
-RUN apk del $BUILD_DEPS
+# Install auto-editor in the virtual environment
+RUN pip install --no-cache-dir auto-editor
 
+# --- Ensure /tmp is writable ---
+RUN mkdir -p /tmp && chmod 777 /tmp
+
+# Set up working directory
 WORKDIR /app
 
-# copiar sólo archivos de lock/manifest para aprovechar cache
+# Copy package.json and install Node.js dependencies
 COPY package.json ./
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install --production
 
-# instalar solo producción (si necesitas dev deps en build o dev, ajustar)
-RUN npm install --prod
-
-# copiar el resto del proyecto (node_modules está en .dockerignore)
+# Copy the rest of your application
 COPY . .
 
+# Expose port and define the default command
 EXPOSE 3000
 CMD ["node", "src/app.js"]

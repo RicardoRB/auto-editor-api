@@ -109,12 +109,13 @@ function runAutoEditor(jobId, template, inputPath, outputExt, jobRecord) {
     ae.stdout.on("data", (d) => {
       const s = d.toString();
       stdout += s;
-      if (s.length < 1000) log("debug", "auto-editor_stdout", { jobId, data: s });
+      jobRecord.lastStdout = s;
+      // log("debug", "auto-editor_stdout", { jobId, data: s });
     });
     ae.stderr.on("data", (d) => {
       const s = d.toString();
       stderr += s;
-      log("debug", "auto-editor_stderr_chunk", { jobId, chunk: s.slice(0, 500) });
+      log("info", "auto-editor_stderr_chunk", { jobId, chunk: s.slice(0, 500) });
     });
 
     ae.on("error", (err) => {

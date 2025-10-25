@@ -124,6 +124,7 @@ router.get("/api/uploadposts/auto-editor/jobs/:jobId", (req, res) => {
     status: job.status,
     duration_seconds: job.duration_seconds || null,
     output_extension: job.outputExt || job.outputExt === undefined ? job.outputExt : job.outputExt,
+    last_stdout: job.lastStdout || null,
   };
   return res.json(response);
 });
