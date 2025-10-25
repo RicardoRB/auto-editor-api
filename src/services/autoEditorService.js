@@ -87,17 +87,17 @@ function runAutoEditor(jobId, template, inputPath, outputExt, jobRecord) {
     jobRecord.startedAt = new Date().toISOString();
     log("info", "runAutoEditor: starting auto-editor", { jobId, args, argsCount: args.length });
 
-    // Timeout de 30 minutos
+    // Timeout de 120 minutos
     const timeout = setTimeout(() => {
       if (ae && !ae.killed) {
         ae.kill();
         jobRecord.status = "ERROR";
-        jobRecord.error = "Timeout después de 30 minutos";
+        jobRecord.error = "Timeout después de 120 minutos";
         jobRecord.finishedAt = new Date().toISOString();
         log("error", "runAutoEditor: timeout killed process", { jobId });
         resolve();
       }
-    }, 30 * 60 * 1000);
+    }, 120 * 60 * 1000);
 
     const ae = spawn(args[0], args.slice(1), {
       stdio: ["inherit", "pipe", "pipe"],
