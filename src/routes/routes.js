@@ -30,7 +30,7 @@ router.get("/health", (req, res) => {
 });
 
 router.post(
-  "/api/uploadposts/auto-editor/jobs/upload",
+  "/api/auto-editor/jobs/upload",
   authenticate,
   upload.single("file"),
   async (req, res) => {
@@ -108,7 +108,7 @@ router.post(
   }
 );
 
-router.get("/api/uploadposts/auto-editor/jobs/:jobId", (req, res) => {
+router.get("/api/auto-editor/jobs/:jobId", (req, res) => {
   const jobId = req.params.jobId;
   log("info", "job_status_requested", { jobId });
   const job = jobs.get(jobId);
@@ -129,7 +129,7 @@ router.get("/api/uploadposts/auto-editor/jobs/:jobId", (req, res) => {
   return res.json(response);
 });
 
-router.get("/api/uploadposts/auto-editor/jobs/:jobId/download", (req, res) => {
+router.get("/api/auto-editor/jobs/:jobId/download", (req, res) => {
   const jobId = req.params.jobId;
   log("info", "download_requested", { jobId, ip: req.ip });
   const job = jobs.get(jobId);
@@ -164,7 +164,7 @@ router.get("/api/uploadposts/auto-editor/jobs/:jobId/download", (req, res) => {
   stream.pipe(res);
 });
 
-router.get("/api/uploadposts/auto-editor/jobs", (req, res) => {
+router.get("/api/auto-editor/jobs", (req, res) => {
   const all = Array.from(jobs.values()).map((j) => ({
     job_id: j.job_id,
     status: j.status,
