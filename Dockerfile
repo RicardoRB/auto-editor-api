@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM ubuntu:25.10
 
 # Set environment variables
@@ -32,7 +31,7 @@ WORKDIR /app
 COPY package.json ./
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
-    npm install --production
+    npm install --omit=dev
 
 # Copy the rest of your application
 COPY . .
